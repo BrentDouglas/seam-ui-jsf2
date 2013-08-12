@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>jboss-seam-parent</artifactId>
+        <groupId>org.jboss.seam</groupId>
+        <version>2.3.1.Final</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>jboss-seam-ui</artifactId>
+    <url>http://jboss.com/products/seam/taglib</url>
+    <name>Seam JSF Controls</name>
+    <version>2.3.1.Brite</version>
+
+	<properties>
+		<!-- General properties -->
+        <project.short.version>2.3</project.short.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<seam.docbook.version>1.1.0.GA</seam.docbook.version>
+		<jbossorg.docbook.version>1.1.0</jbossorg.docbook.version>
+		<pdf.name>${project.artifactId}.pdf</pdf.name>
+
+		<!-- Version string properties -->
+        <version.seam>2.3.1.Final</version.seam>
+		<version.arquillian_core>1.0.1.Final</version.arquillian_core>
+		<version.wicket>1.4.14</version.wicket>
+		<version.testng>5.14.10</version.testng>
+		<version.resteasy>2.0.1.GA</version.resteasy>
+		<version.jacoco>0.5.8.201207111220</version.jacoco>
+		<version.jbossas7>7.1.1.Final</version.jbossas7>
+		<version.emma>2.0.5312</version.emma>
+		<version.junit>4.8.2</version.junit>
+		<version.richfaces.cdk>3.3.4.Final</version.richfaces.cdk>
+        <version.com.sun.facelets.jsf-facelets>1.1.15.B1</version.com.sun.facelets.jsf-facelets>
+        <version.org.richfaces>3.3.4.Brite</version.org.richfaces>
+        <version.org.richfaces.framework.richfaces-impl>${version.org.richfaces}</version.org.richfaces.framework.richfaces-impl>
+
+		<!-- ***************** -->
+		<!-- Repository Deployment URLs -->
+		<!-- ***************** -->
+		<jboss.releases.repo.url>https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/</jboss.releases.repo.url>
+		<jboss.snapshots.repo.url>https://repository.jboss.org/nexus/content/repositories/snapshots/</jboss.snapshots.repo.url>
+		<maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
+	</properties>
+
+    <build>
+        <finalName>jboss-seam-ui</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.richfaces.cdk</groupId>
+                <artifactId>maven-cdk-plugin</artifactId>
+                <version>${version.richfaces.cdk}</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <library>
+                        <prefix>org.jboss.seam.ui</prefix>
+                        <description>JSF controls for JBoss Seam</description>
+                        <taglib>
+                            <displayName>JBoss Seam UI</displayName>
+                            <shortName>s</shortName>
+                            <tlibVersion>2.0</tlibVersion>
+                            <jspVersion>2.1</jspVersion>
+                        </taglib>
+                    </library>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!-- See parent pom for notes on how to declare dependencies -->
+    <dependencies>
+
+        <dependency>
+            <groupId>org.jboss.spec.javax.servlet</groupId>
+            <artifactId>jboss-servlet-api_3.0_spec</artifactId>
+            <optional>true</optional>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.spec.javax.servlet.jsp</groupId>
+            <artifactId>jboss-jsp-api_2.2_spec</artifactId>
+            <optional>true</optional>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.seam</groupId>
+            <artifactId>jboss-seam</artifactId>
+            <type>ejb</type>
+        </dependency>
+
+        <dependency>
+            <groupId>antlr</groupId>
+            <artifactId>antlr</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.spec.javax.faces</groupId>
+            <artifactId>jboss-jsf-api_2.1_spec</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.facelets</groupId>
+            <artifactId>jsf-facelets</artifactId>
+            <version>${version.com.sun.facelets.jsf-facelets}</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.jbpm.jbpm3</groupId>
+            <artifactId>jbpm-jpdl</artifactId>
+            <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <!--         <dependency> -->
+        <!--             <groupId>org.jboss.spec.javax.el</groupId> -->
+        <!--             <artifactId>jboss-el-api_2.2_spec</artifactId> -->
+        <!--             <scope>provided</scope> -->
+        <!--         </dependency> -->
+
+        <dependency>
+            <groupId>org.richfaces.framework</groupId>
+            <artifactId>richfaces-impl-jsf2</artifactId>
+            <version>${version.org.richfaces.framework.richfaces-impl}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+</project>
