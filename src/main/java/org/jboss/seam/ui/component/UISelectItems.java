@@ -1,22 +1,22 @@
 package org.jboss.seam.ui.component;
 
-import static org.jboss.seam.util.Strings.emptyIfNull;
+import org.jboss.seam.framework.Query;
+import org.jboss.seam.ui.converter.ConverterChain;
+import org.jboss.seam.ui.converter.NoSelectionConverter;
 
+import javax.el.ValueExpression;
+import javax.faces.FacesException;
+import javax.faces.component.ValueHolder;
+import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
+import javax.faces.model.DataModel;
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.el.ValueExpression;
-import javax.faces.FacesException;
-import javax.faces.component.ValueHolder;
-import javax.faces.convert.Converter;
-
-import javax.faces.model.DataModel;
-
-import org.jboss.seam.framework.Query;
-import org.jboss.seam.ui.converter.ConverterChain;
-import org.jboss.seam.ui.converter.NoSelectionConverter;
+import static org.jboss.seam.util.Strings.emptyIfNull;
 
 
 /**
@@ -24,10 +24,10 @@ import org.jboss.seam.ui.converter.NoSelectionConverter;
  *
  */
 public abstract class UISelectItems extends javax.faces.component.UISelectItems {
-   
+
    private List<javax.faces.model.SelectItem> selectItems;
    private Object originalValue;
-   
+
    private class NullableSelectItem extends javax.faces.model.SelectItem
    {
 
@@ -46,11 +46,11 @@ public abstract class UISelectItems extends javax.faces.component.UISelectItems 
       }
 
    }
-   
+
    private abstract class ContextualSelectItem {
-      
+
       private Object varValue;
-      
+
       public ContextualSelectItem(Object varValue)
       {
          if (varValue == null)
@@ -59,7 +59,7 @@ public abstract class UISelectItems extends javax.faces.component.UISelectItems 
          }
          this.varValue = varValue;
       }
-      
+
       /**
        * @return the varValue
        */
@@ -67,17 +67,17 @@ public abstract class UISelectItems extends javax.faces.component.UISelectItems 
       {
          return this.varValue;
       }
-      
+
       private void setup()
       {
          getFacesContext().getExternalContext().getRequestMap().put(getVar(), varValue);
       }
-      
+
       private void cleanup()
       {
          getFacesContext().getExternalContext().getRequestMap().remove(getVar());
       }
-      
+
       protected abstract Object getSelectItemValue();
       protected abstract String getSelectItemLabel();
       protected abstract Boolean getSelectItemDisabled();
@@ -100,9 +100,9 @@ public abstract class UISelectItems extends javax.faces.component.UISelectItems 
    private static final String NO_SELECTION_VALUE = null;
 
    /* Kinder impl of get/setLabel */
-   
+
    private String label;
-   
+
    public String getLabel()
    {
       ValueExpression ve = getValueExpression("label");
@@ -116,7 +116,7 @@ public abstract class UISelectItems extends javax.faces.component.UISelectItems 
       }
       return label;
    }
-   
+
    public void setLabel(String label)
    {
       this.label = label;
@@ -124,27 +124,27 @@ public abstract class UISelectItems extends javax.faces.component.UISelectItems 
 
 
    public abstract void setHideNoSelectionLabel(Boolean hideNoSelectionLabel);
-   
+
    public abstract Boolean getHideNoSelectionLabel();
-   
+
    public abstract String getNoSelectionLabel();
-   
+
    public abstract void setNoSelectionLabel(String noSelectionLabel);
-   
+
    public abstract String getVar();
-   
+
    public abstract void setVar(String var);
-      
+
    public abstract Boolean getDisabled();
-   
+
    public abstract void setDisabled(Boolean disabled);
-   
+
    public abstract Boolean getEscape();
 
    public abstract void setEscape(Boolean escape);
 
    public abstract Object getItemValue();
-   
+
    public abstract void setItemValue(Object itemValue);
 
    @Override
@@ -152,22 +152,22 @@ public abstract class UISelectItems extends javax.faces.component.UISelectItems 
    {
       List<javax.faces.model.SelectItem> temporarySelectItems = new ArrayList<javax.faces.model.SelectItem>();
       javax.faces.model.SelectItem noSelectionLabel = noSelectionLabel();
-      if (noSelectionLabel != null) 
+      if (noSelectionLabel != null)
       {
          temporarySelectItems.add(noSelectionLabel);
       }
       if (selectItems == null || originalValue == null || !originalValue.equals(super.getValue()))
-      {  
+      {
          originalValue = super.getValue();
          selectItems = new ArrayList<javax.faces.model.SelectItem>();
-         
+
          if (originalValue instanceof Iterable)
          {
             selectItems.addAll(asSelectItems((Iterable) originalValue));
          }
          else if (originalValue instanceof DataModel && ((DataModel) originalValue).getWrappedData() instanceof Iterable)
          {
-            selectItems.addAll(asSelectItems((Iterable) ((DataModel) originalValue).getWrappedData())); 
+            selectItems.addAll(asSelectItems((Iterable) ((DataModel) originalValue).getWrappedData()));
          }
          else if (originalValue instanceof Query)
          {
@@ -181,13 +181,13 @@ public abstract class UISelectItems extends javax.faces.component.UISelectItems 
          {
             return originalValue;
          }
-         
+
       }
       temporarySelectItems.addAll(selectItems);
       return temporarySelectItems;
-   }   
-   
-   private List<javax.faces.model.SelectItem> asSelectItems(Iterable iterable) 
+   }
+
+   private List<javax.faces.model.SelectItem> asSelectItems(Iterable iterable)
    {
       List<javax.faces.model.SelectItem> selectItems =  new ArrayList<javax.faces.model.SelectItem>();
       for (final Object o : iterable)
@@ -221,56 +221,70 @@ public abstract class UISelectItems extends javax.faces.component.UISelectItems 
                Object value = getItemValue();
                return value == null ? getVarValue() : value;
             }
-            
+
          }.create());
       }
       return selectItems;
    }
-   
-   
 
-   private javax.faces.model.SelectItem noSelectionLabel()
+    @Override
+    public void decode(FacesContext context) {
+        super.decode(context);
+        addConverterChainIfRequired();
+    }
+
+    @Override
+    public void encodeEnd(final FacesContext context) throws IOException {
+        super.encodeEnd(context);
+        addConverterChainIfRequired();
+    }
+
+    private void addConverterChainIfRequired() {
+        if(isShowNoSelectionLabel()){
+            final ConverterChain converterChain = new ConverterChain(this.getParent());
+            final Converter noSelectionConverter = new NoSelectionConverter();
+            // Make sure that the converter is only added once
+            if (!converterChain.containsConverterType(noSelectionConverter)) {
+                converterChain.addConverterToChain(noSelectionConverter, ConverterChain.CHAIN_START);
+            }
+        }
+    }
+
+    private javax.faces.model.SelectItem noSelectionLabel()
    {
       if (isShowNoSelectionLabel())
       {
-         NullableSelectItem s = new NullableSelectItem(NO_SELECTION_VALUE, getNoSelectionLabel());
-         ConverterChain converterChain = new ConverterChain(this.getParent());
-         Converter noSelectionConverter = new NoSelectionConverter();
-         // Make sure that the converter is only added once
-         if (!converterChain.containsConverterType(noSelectionConverter)) {
-            converterChain.addConverterToChain(noSelectionConverter, ConverterChain.CHAIN_START);
-         }
-         return s;
+         return new NullableSelectItem(NO_SELECTION_VALUE, getNoSelectionLabel());
       }
       else
       {
          return null;
       }
    }
-   
+
    private boolean isShowNoSelectionLabel()
-   {  
+   {
       ValueExpression vb = getValueExpression("noSelectionLabel");
       String noSelectionLabel = getNoSelectionLabel();
       Boolean hideNoSelectionLabel = getHideNoSelectionLabel();
       Object parentValue = getParentValue();
-      
+
       /*
        * This is a slight hack. If you do an EL expresison like this (to hide the label)
-       * 
+       *
        * noSelectionLabel="#{x eq y ? 'Please Select' : null}"
-       * 
+       *
        * then, if x != y, EL will return an empty String, not null, so we work around that, with the side effect
        * that if the result of the EL expression is an empty String, then the label will be hidden.
        */
       if (noSelectionLabel != null && vb == null && !(hideNoSelectionLabel  && parentValue != null))
       {
-         /* 
+         /*
           * Here, the user has specfied a noSelectionLabel (may be an empty string), and, if hideNoSelectionLabel
           * is set, then, if a value is selected, then the label is hidden
-          */ 
+          */
          return true;
-      } 
+      }
       else if (noSelectionLabel != null && !"".equals(noSelectionLabel) && !(hideNoSelectionLabel && parentValue != null))
       {
          /*
@@ -297,7 +311,7 @@ public abstract class UISelectItems extends javax.faces.component.UISelectItems 
          return null;
       }
    }
-   
+
    private static List arrayAsList(Object array)
    {
       if (array.getClass().getComponentType().isPrimitive())
@@ -314,5 +328,5 @@ public abstract class UISelectItems extends javax.faces.component.UISelectItems 
          return Arrays.asList((Object[]) array);
       }
    }
-	
+
 }
